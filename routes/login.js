@@ -1,73 +1,48 @@
+// @ts-ignore
 const router = require('koa-router')()
-var NodeRSA = require('node-rsa')
-const fs = require('fs');
+const NodeRSA = require('node-rsa');
 
-// const mysql      = require('mysql');
-// const connection = mysql.createConnection({
-//   host     : '47.100.167.231',
-//   user     : 'root',
-//   password : '9872014skylove',
-//   database : 'blog'
-// });
- 
-// connection.connect();
-// let a;
-// connection.query('SELECT * FROM user', function (error, results, fields) {
-//   if (error) throw error;
-//   a = results;
-//   console.log('The solution is: ', results[0].password);
-// });
+const key = new NodeRSA({b: 1024});
+const addtoken = require('../token/addtoken');
+const query = require('../sql/query');
+const cryptPwd = require('../cryptPwd/cryptPwd');
+
+// 查看 https://github.com/rzcoder/node-rsa/issues/91
+key.setOptions({encryptionScheme: 'pkcs1'}); // 必须加上，加密方式问题。
 
 router.prefix('/login');
 
-// router.post('/', function (ctx, next) {
-
-//   var keyValue = JSON.parse(ctx.request.body).value;
- 
-
-//   console.log('iput', decrypted);
-//   console.log('decrypted: ', encrypted);
-
-//   ctx.body = keyValue;
-// })
-
-// 返回private
 router.get('/publicKey', async (ctx, next) => {
-  function generator() {
-    var key = new NodeRSA({ b: 512 })
-    key.setOptions({ encryptionScheme: 'pkcs1' })
-  
-    var privatePem = key.exportKey('pkcs1-private-pem')
-    var publicPem = key.exportKey('pkcs1-public-pem')
-  
-    fs.writeFileSync('routes/pem/public.pem', publicPem, (err) => {
-      if (err) throw err
-      console.log('公钥已保存！',publicPem)
-    })
-    fs.writeFileSync('routes/pem/private.pem', privatePem, (err) => {
-      if (err) throw err
-      console.log('私钥已保存！',privatePem)
-    })
-  }
-  
-  function encrypt() {
+  // 获取公私钥
+  let publicDer = key.exportKey('public');
 
-    fs.readFileSync('./pem/private.pem', function (err, data) {
-      var key = new NodeRSA(data);
-      // let cipherText = key.encryptPrivate('hello world', 'base64');
-      // ctx.body = {a:key};
-      res = key;
-      console.log('加密',key);
-    });
-  }
-
-  encrypt();
-  ctx.body = {a:res};
-
+  ctx.body = publicDer;
 });
 
-router.get('/bar', function (ctx, next) {
-  ctx.body = 'this is a users/bar response'
-})
+router.post('/decryption', async (ctx, next) => {
+  // 对加密数据进行解密
+  let obj = JSON.parse(ctx.request.body);
+  // 转数字
+  let userName = +obj.username;
+
+  let password = cryptPwd(key.decrypt(obj.password, 'utf8'));
+
+  let sqlContent = await query(`SELECT * FROM user WHERE username = ${userName}`);
+
+  if(sqlContent[0].password===password){
+    // 成功
+    ctx.body = {
+      status: 'ok',
+      token: addtoken(JSON.parse(ctx.request.body))
+    };
+  } else{
+    ctx.body = {
+      status: 'error',
+      token: ''
+    };
+  }
+
+  // ctx.cookies.set({token:token})
+});
 
 module.exports = router

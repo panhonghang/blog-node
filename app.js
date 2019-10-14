@@ -7,8 +7,7 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 
-const index = require('./routes/index')
-const users = require('./routes/users')
+const register = require('./routes/register');
 const login = require('./routes/login')
 
 // 解决跨域问题
@@ -44,14 +43,16 @@ app.use(async (ctx, next) => {
  
   const start = new Date()
   await next()
+  // @ts-ignore
   const ms = new Date() - start
   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
 
 // routes
-app.use(index.routes(), index.allowedMethods())
-app.use(users.routes(), users.allowedMethods())
+// @ts-ignore
 app.use(login.routes(), login.allowedMethods())
+// @ts-ignore
+app.use(register.routes(), register.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
