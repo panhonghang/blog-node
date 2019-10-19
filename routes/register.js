@@ -1,4 +1,3 @@
-import cryptPwd from '../cryptPwd/cryptPwd';
 // @ts-ignore
 const router = require('koa-router')();
 const query = require('../sql/query');

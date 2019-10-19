@@ -9,6 +9,7 @@ const logger = require('koa-logger')
 
 const register = require('./routes/register');
 const login = require('./routes/login')
+const page = require('./routes/page')
 
 // 解决跨域问题
 app.use(cors({
@@ -53,6 +54,8 @@ app.use(async (ctx, next) => {
 app.use(login.routes(), login.allowedMethods())
 // @ts-ignore
 app.use(register.routes(), register.allowedMethods())
+
+app.use(page.routes(), page.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
