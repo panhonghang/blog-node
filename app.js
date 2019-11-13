@@ -9,7 +9,8 @@ const logger = require('koa-logger')
 
 const register = require('./routes/register');
 const login = require('./routes/login')
-const page = require('./routes/page')
+const page = require('./routes/page');
+const blog= require('./routes/blog')
 
 // 解决跨域问题
 app.use(cors({
@@ -56,6 +57,8 @@ app.use(login.routes(), login.allowedMethods())
 app.use(register.routes(), register.allowedMethods())
 
 app.use(page.routes(), page.allowedMethods())
+
+app.use(blog.routes(), blog.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
