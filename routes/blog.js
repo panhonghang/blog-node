@@ -32,15 +32,15 @@ router.get('/detail', async (ctx, next) => {
   let sqlContent = await query(`SELECT * FROM blogDetail`);
   // 处理blob数据
   let data = [];
-  sqlContent.forEach(item=>{
-    data.push(item.markdown.toString())
-  })
+  // sqlContent.forEach(item=>{
+    // data.push(item.markdown)
+  // })
 
   if(sqlContent[0]!==null){
     // 成功
     ctx.body = {
       status: 'ok',
-      data: data
+      data: sqlContent
     };
   } else{
     ctx.body = {
