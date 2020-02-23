@@ -50,4 +50,20 @@ router.get('/detail', async (ctx, next) => {
   }
 });
 
+router.post('/message', async (ctx, next) => {
+  console.log(ctx.request.body);
+  let sqlContent = await query(`INSERT INTO message(message) VALUES('${ctx.request.body.message}')`);
+  console.log(sqlContent)
+  if(sqlContent[0]!==null){
+    // 成功
+    ctx.body = {
+      status: 'ok',
+    };
+  } else{
+    ctx.body = {
+      status: 'error',
+    };
+  }
+});
+
 module.exports = router
